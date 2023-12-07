@@ -4,6 +4,12 @@ Functions file
 import numpy as np
 
 
+def pred_prey(params, time_steps):
+    simulated_data = np.empty((time_steps, 2))
+    for i in range(time_steps):
+        #bla bla lotka
+    return simulated_data
+
 def hill_climbing(params, data, objective_function, iterations, step_size = 1):
     """
     Local optimum optimization function that converges to local optimum by slightly
@@ -11,11 +17,13 @@ def hill_climbing(params, data, objective_function, iterations, step_size = 1):
     """
     best_score = objective_function(params, data)
     best_params = params
+    time_steps = np.shape(data)[0]
     for _ in range(iterations):
         # Calculate score of deviation
         deviation = step_size * np.random.randn(len(params))
         params = best_params + deviation
-        score = objective_function(params, data)
+        simulated_data = pred_prey(params, time_steps)
+        score = objective_function(simulated_data, data)
         # Change params and score if closer to local optimum
         if score > best_score:
             best_params = params
