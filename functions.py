@@ -21,3 +21,15 @@ def hill_climbing(params, data, objective_function, iterations, step_size = 1):
             best_params = params
             best_score = score
     return best_params
+
+def mean_squared_error(data, simulated_data):
+    '''
+    Mean squared error (MSE) as objective function number 1
+    '''
+    if len(data) != len(simulated_data):
+        print('Error: Number of datapoints of the data and the simulation',
+              ' are not equal. Corresponding MSE can not be calculated')
+    squared = np.zeros(len(data))
+    for i in range(len(data)):
+        squared[i] = (data[i] - simulated_data[i])**2
+    return np.mean(squared)
