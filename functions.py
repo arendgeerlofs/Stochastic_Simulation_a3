@@ -11,4 +11,9 @@ def mean_squared_error(data, simulated_data):
     '''
     Mean squared error (MSE) as objective function number 1
     '''
-    return np.mean((data - simulated_data)**2)
+    if len(data) != len(simulated_data):
+        print('Error: Number of datapoints of the data and the simulation are not equal. Corresponding MSE can not be calculated')
+    squared = np.zeros(len(data))
+    for i in range(len(data)):
+        squared[i] = (data[i] - simulated_data[i])**2
+    return np.mean(squared)
