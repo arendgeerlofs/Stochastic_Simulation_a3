@@ -39,5 +39,6 @@ def mean_squared_error(data, simulated_data):
               ' are not equal. Corresponding MSE can not be calculated')
     squared = np.zeros(len(data))
     for i in range(len(data)):
-        squared[i] = (data[i] - simulated_data[i])**2
-    return np.mean(squared)
+        for j in range(len(data)):
+            squared[i, j] = (data[i, j] - simulated_data[i, j])**2
+    return np.mean(np.mean(squared, axis=0))
