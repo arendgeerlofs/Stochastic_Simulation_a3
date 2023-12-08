@@ -43,10 +43,9 @@ def mean_squared_error(data, simulated_data):
     if len(data) != len(simulated_data):
         print('Error: Number of datapoints of the data and the simulation',
               ' are not equal. Corresponding MSE can not be calculated')
-    squared = np.zeros(len(data))
+    squared = np.zeros((len(data),2))
     for i in range(len(data)):
-        for j in range(len(data)):
-            squared[i, j] = (data[i, j] - simulated_data[i, j])**2
+        squared[i, :] = (data[i, :] - simulated_data[i, :])**2
     return np.mean(np.mean(squared, axis=0))
 
 def proposal(mu,var):
