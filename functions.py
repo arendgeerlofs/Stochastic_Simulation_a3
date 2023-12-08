@@ -4,10 +4,16 @@ Functions file
 import numpy as np
 
 
-def pred_prey(params, time_steps):
+def pred_prey(params, time_steps, dt):
     simulated_data = np.empty((time_steps, 2))
-    for i in range(time_steps):
-        #bla bla lotka
+    x0, y0, alpha, beta, gamma, delta = params
+    simulated_data[0][0] = x0
+    simulated_data[0][1] = y0
+    for i in range(1, time_steps):
+        prev_x = simulated_data[i-1][0]
+        prev_y = simulated_data[i-1][1]
+        simulated_data[i][0] = prev_x + dt*(alpha*prev_x - beta*prev_x*prev_y)
+        simulated_data[i][1] = prev_y + dt*(delta*prev_x*prev_y - gamma*prev_y)
     return simulated_data
 
 def hill_climbing(params, data, objective_function, iterations, step_size = 1):
@@ -42,3 +48,39 @@ def mean_squared_error(data, simulated_data):
         for j in range(len(data)):
             squared[i, j] = (data[i, j] - simulated_data[i, j])**2
     return np.mean(np.mean(squared, axis=0))
+
+def proposal(mu,var):
+    return np.random.normal(mu,var)
+
+def boltzmann(h, T):
+    return np.exp(-h/T)
+
+def acceptance(h_old, h_new, T):
+    return min(boltzmann(h_new,T)/boltzmann(h_old,T), 1)
+
+def simulated_annealing(initial, dt, data, T_precision=10**3):
+    params = initial
+    temperatures = np.linspace(1,0, T_precision)
+    simulated_data = pred_prey(params, 100, dt)
+    h_old = mean_squared_error(data, simulated_data)
+    h_list = np.array([h_old])
+    
+    for T in temperatures:
+        
+        # finding proposal params
+        prop_params = np.zeros(len(params))
+        for i in range(len(params)):
+            prop_params[i] = proposal(prop_params[i], 0.1)
+        
+        simulated_data = pred_prey(params, 100, dt)
+        h_new = mean_squared_error(data, simulated_data)
+        
+        # accept/reject
+        alpha = acceptance(h_old, h_new, T)
+        u = np.random.uniform(0,1)
+        if u <= alpha:
+            params = prop_params
+            h_old = h_new
+        
+        h_list = np.append(h_list, h_old)
+    return params, h_list
