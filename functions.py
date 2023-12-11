@@ -4,9 +4,10 @@ Functions file
 import numpy as np
 
 
-def pred_prey(params, time_steps, dt):
+def pred_prey(init_xy, params, time_steps, dt):
     simulated_data = np.empty((time_steps, 2))
-    x0, y0, alpha, beta, gamma, delta = params
+    x0, y0 = init_xy
+    alpha, beta, gamma, delta = params
     simulated_data[0][0] = x0
     simulated_data[0][1] = y0
     for i in range(1, time_steps):
@@ -57,10 +58,10 @@ def boltzmann(h, T):
 def acceptance(h_old, h_new, T):
     return min(boltzmann(h_new,T)/boltzmann(h_old,T), 1)
 
-def simulated_annealing(initial, dt, data, T_precision=10**3):
+def simulated_annealing(init_xy, initial, dt, data, T_precision=10**3):
     params = initial
     temperatures = np.linspace(1,0, T_precision)
-    simulated_data = pred_prey(params, 100, dt)
+    simulated_data = pred_prey(init_xy, params, 100, dt)
     h_old = mean_squared_error(data, simulated_data)
     h_list = np.array([h_old])
     
@@ -71,7 +72,7 @@ def simulated_annealing(initial, dt, data, T_precision=10**3):
         for i in range(len(params)):
             prop_params[i] = proposal(prop_params[i], 0.1)
         
-        simulated_data = pred_prey(params, 100, dt)
+        simulated_data = pred_prey(init_xy, params, 100, dt)
         h_new = mean_squared_error(data, simulated_data)
         
         # accept/reject
