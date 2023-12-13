@@ -43,11 +43,23 @@ def mean_squared_error(data, simulated_data):
     '''
     if len(data) != len(simulated_data):
         print('Error: Number of datapoints of the data and the simulation',
-              ' are not equal. Corresponding MSE can not be calculated')
+              ' are not equal. Corresponding MSE can not be calculated correctly')
     squared = np.zeros((len(data),2))
     for i in range(len(data)):
         squared[i, :] = (data[i, :] - simulated_data[i, :])**2
     return np.mean(np.mean(squared, axis=0))
+
+def mean_absolute_percentage_error(data, simulated_data):
+    '''
+    Mean absolute percentage error (MAPE) as objective function number 2
+    '''
+    if len(data) != len(simulated_data):
+        print('Error: Number of datapoints of the data and the simulation',
+              ' are not equal. Corresponding MAPE can not be calculated correctly')
+    percentage = np.zeros((len(data),2))
+    for i in range(len(data)):
+        percentage[i, :] = np.abs(data[i, :] - simulated_data[i, :]) / data[i, :]
+    return np.mean(np.mean(percentage, axis=0))
 
 def proposal(mu,var):
     return np.random.normal(mu,var)
