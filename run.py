@@ -26,9 +26,9 @@ plt.show()
 
 # Initial parameters
 init_params = [1, 1 ,1, 0.5, 0.5, 0.5]
-upper = 1.1
-a = 10
-b = 2
+upper = 10
+a = 0.01
+b = 100
 
 # Running simulated annealing
 params, h_list, accep_list = simulated_annealing(init_params, a,b, 

@@ -93,7 +93,6 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
     # Set variables and data-arrays
     params = initial
     accep_list = np.zeros(iterations)
-    count = 0
     
     # Initial run
     simulated_data = pred_prey(params, 100, dt)
@@ -114,7 +113,7 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
         prop_params[0] = np.random.uniform(0, 7)
         prop_params[1] = np.random.uniform(0, 4.5)
         for i in range(2, len(params)):
-            prop_params[i] = np.random.uniform(0,upper)
+            prop_params[i] = np.random.uniform(0, upper)
         
         simulated_data = pred_prey(prop_params, 100, dt)
         if MSE:
@@ -128,10 +127,9 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
         if u <= alpha:
             params = prop_params
             h_old = h_new
-            accep_list[count] = 1
-        
-        # updates
-        count += 1
-        h_list = np.append(h_list, h_old)
+            accep_list[n] = 1
+            h_list = np.append(h_list, h_old)
+        else:
+            n -= 1
         
     return params, h_list, accep_list
