@@ -62,13 +62,18 @@ def mean_absolute_percentage_error(data, simulated_data):
     return np.mean(np.mean(percentage, axis=0))
 
 def proposal(mu,var):
+    neg = True
+    while neg:
+        u = np.random.normal(mu,var)
+        if u > 0:
+            neg = False
     return np.random.normal(mu,var)
 
 def boltzmann(h, T):
     return np.exp(-h/T)
 
 def acceptance(h_old, h_new, T):
-    return min(boltzmann(h_new,T)/boltzmann(h_old,T), 1)
+    return min(boltzmann(h_new-h_old,T), 1)
 
 def simulated_annealing(init_xy, initial, dt, data, T_precision=10**3):
     params = initial
@@ -82,9 +87,9 @@ def simulated_annealing(init_xy, initial, dt, data, T_precision=10**3):
         # finding proposal params
         prop_params = np.zeros(len(params))
         for i in range(len(params)):
-            prop_params[i] = proposal(prop_params[i], 0.1)
+            prop_params[i] = proposal(params[i], 0.1)
         
-        simulated_data = pred_prey(init_xy, params, 100, dt)
+        simulated_data = pred_prey(init_xy, prop_params, 100, dt)
         h_new = mean_squared_error(data, simulated_data)
         
         # accept/reject
