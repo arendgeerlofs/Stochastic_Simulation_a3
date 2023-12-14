@@ -4,10 +4,9 @@ Functions file
 import numpy as np
 
 
-def pred_prey(init_xy, params, time_steps, dt):
+def pred_prey(params, time_steps, dt):
     simulated_data = np.empty((time_steps, 2))
-    x0, y0 = init_xy
-    alpha, beta, gamma, delta = params
+    x0, y0, alpha, beta, gamma, delta = params
     simulated_data[0][0] = x0
     simulated_data[0][1] = y0
     for i in range(1, time_steps):
@@ -75,22 +74,53 @@ def boltzmann(h, T):
 def acceptance(h_old, h_new, T):
     return min(boltzmann(h_new-h_old,T), 1)
 
-def simulated_annealing(init_xy, initial, dt, data, T_precision=10**3):
+def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
+                        MSE = True):
+    """
+    Simulated Annealing method for reducing the error between data and function
+    and in doing so reverse-engineering the predator-prey model. Input 
+    parameters are:
+        initial - the initial parameters
+        a - variable influencing T's reduction
+        b - varianble influencing T's reduction
+        upper - upper boundary for the uniform distribution
+        dt - stepsize for time
+        data - the given data
+        iterations - number of T-values
+        MSE - boolean deciding which objective function is used
+    """
+    
+    # Set variables and data-arrays
     params = initial
-    temperatures = np.linspace(1,0, T_precision)
-    simulated_data = pred_prey(init_xy, params, 100, dt)
-    h_old = mean_squared_error(data, simulated_data)
+    accep_list = np.zeros(iterations)
+    count = 0
+    
+    # Initial run
+    simulated_data = pred_prey(params, 100, dt)
+    
+    # Call objective function
+    if MSE:
+        h_old = mean_squared_error(data, simulated_data)
+    else:
+        h_old = mean_absolute_percentage_error(data, simulated_data)
+        
     h_list = np.array([h_old])
     
-    for T in temperatures:
+    for n in range(iterations):
+        T = a/np.log(n+b)
         
         # finding proposal params
         prop_params = np.zeros(len(params))
-        for i in range(len(params)):
-            prop_params[i] = proposal(params[i], 0.1)
+        prop_params[0] = np.random.uniform(0, 7)
+        prop_params[1] = np.random.uniform(0, 4.5)
+        for i in range(2, len(params)):
+            prop_params[i] = np.random.uniform(0,upper)
         
-        simulated_data = pred_prey(init_xy, prop_params, 100, dt)
-        h_new = mean_squared_error(data, simulated_data)
+        simulated_data = pred_prey(prop_params, 100, dt)
+        if MSE:
+            h_new = mean_squared_error(data, simulated_data)
+        else:
+            h_new = mean_absolute_percentage_error(data, simulated_data)
         
         # accept/reject
         alpha = acceptance(h_old, h_new, T)
@@ -98,6 +128,10 @@ def simulated_annealing(init_xy, initial, dt, data, T_precision=10**3):
         if u <= alpha:
             params = prop_params
             h_old = h_new
+            accep_list[count] = 1
         
+        # updates
+        count += 1
         h_list = np.append(h_list, h_old)
-    return params, h_list
+        
+    return params, h_list, accep_list
