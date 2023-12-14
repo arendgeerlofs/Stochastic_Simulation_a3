@@ -2,7 +2,7 @@
 Upper-boundary test:
     Testing how a, b and the upper boundary of the uniform distributions 
     influence the acceptance rate of Simulated Annealing. Aim is to reach 
-    acceptance rate of 25%
+    acceptance rate of 25% (??)
 """
 import numpy as np
 import csv
@@ -21,15 +21,15 @@ dt = data_t[1]
 
 # Initial parameters
 init_params = [1, 1 ,1, 0.5, 0.5, 0.5]
-upper = np.linspace(0,2,10)
-a = 10
-b = 2
+upper = np.linspace(0,5,10)
+a = 1
+b = 10
 rate_list = []
 
 # Running simulated annealing
 for u in upper:
     params, h_list, accep_list = simulated_annealing(init_params, a, b, u, dt, 
-                                                     data_xy, iterations=10**5, 
+                                                     data_xy, iterations=10**2, 
                                                      MSE=True)
     accept_rate = sum(accep_list)/len(accep_list)
     rate_list.append(accept_rate)

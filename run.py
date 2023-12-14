@@ -26,14 +26,14 @@ plt.show()
 
 # Initial parameters
 init_params = [1, 1 ,1, 0.5, 0.5, 0.5]
-upper = 10
-a = 0.01
+upper = 2
+a = 10
 b = 100
 
 # Running simulated annealing
 params, h_list, accep_list = simulated_annealing(init_params, a,b, 
                                                  upper, dt, data_xy, 
-                                                 iterations=10**5, MSE=False)
+                                                 iterations=10**4, MSE=False)
 
 # Plotting approx predator prey
 simulated_data = pred_prey(params, 100, dt)

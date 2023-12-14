@@ -92,7 +92,10 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
     
     # Set variables and data-arrays
     params = initial
-    accep_list = np.zeros(iterations)
+    accep_list = []
+    count = 0
+    n = 0
+    T = a/np.log(n+b)
     
     # Initial run
     simulated_data = pred_prey(params, 100, dt)
@@ -105,8 +108,10 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
         
     h_list = np.array([h_old])
     
-    for n in range(iterations):
-        T = a/np.log(n+b)
+    # Set end criterium
+    final_T = a/np.log(iterations+b)
+    
+    while T > final_T:
         
         # finding proposal params
         prop_params = np.zeros(len(params))
@@ -127,9 +132,13 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
         if u <= alpha:
             params = prop_params
             h_old = h_new
-            accep_list[n] = 1
+            accep_list.append(1)
             h_list = np.append(h_list, h_old)
+            n += 1
         else:
-            n -= 1
+            accep_list.append(0)
+        
+        T = a/np.log(n+b)
+        count += 1
         
     return params, h_list, accep_list
