@@ -61,11 +61,11 @@ def mean_absolute_percentage_error(data, simulated_data):
     return np.mean(np.mean(percentage, axis=0))
 
 def proposal(mu,var):
-    neg = True
-    while neg:
-        u = np.random.normal(mu,var)
-        if u > 0:
-            neg = False
+    # neg = True
+    # while neg:
+    #     u = np.random.normal(mu,var)
+    #     if u > 0:
+    #         neg = False
     return np.random.normal(mu,var)
 
 def boltzmann(h, T):
@@ -115,10 +115,8 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
         
         # finding proposal params
         prop_params = np.zeros(len(params))
-        prop_params[0] = np.random.uniform(0, 7)
-        prop_params[1] = np.random.uniform(0, 4.5)
-        for i in range(2, len(params)):
-            prop_params[i] = np.random.uniform(0, upper)
+        for i in range(0, len(params)):
+            prop_params[i] = proposal(params[i], upper*T)
         
         simulated_data = pred_prey(prop_params, 100, dt)
         if MSE:
@@ -139,6 +137,7 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
             accep_list.append(0)
         
         T = a/np.log(n+b)
+        print(T)
         count += 1
         
     return params, h_list, accep_list
