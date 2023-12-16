@@ -2,39 +2,46 @@
 Functions file
 """
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
 
+def pred_prey(t, ys, alpha, beta, delta, gamma):
+    x, y = ys
+    dx_dt = alpha*x - beta*x*y
+    dy_dt = delta*x*y - gamma*y
 
-def pred_prey(params, time_steps, dt):
-    simulated_data = np.empty((time_steps, 2))
-    x0, y0, alpha, beta, gamma, delta = params
-    simulated_data[0][0] = x0
-    simulated_data[0][1] = y0
-    for i in range(1, time_steps):
-        prev_x = simulated_data[i-1][0]
-        prev_y = simulated_data[i-1][1]
-        simulated_data[i][0] = prev_x + dt*(alpha*prev_x - beta*prev_x*prev_y)
-        simulated_data[i][1] = prev_y + dt*(delta*prev_x*prev_y - gamma*prev_y)
-    return simulated_data
+    return dx_dt, dy_dt
 
-def hill_climbing(params, data, objective_function, iterations, step_size = 1):
+def hill_climbing(params, data, data_t, dt, iterations, MSE=True, step_size = 0.01):
     """
     Local optimum optimization function that converges to local optimum by slightly
     changing param values randomly and comparing objective scores
     """
-    best_score = objective_function(params, data)
-    best_params = params
     time_steps = np.shape(data)[0]
+    if MSE:
+        objective_function = mean_squared_error
+    else:
+        objective_function = mean_absolute_percentage_error
+    simulated_data = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
+    best_score = objective_function(data, simulated_data)
+    best_params = params
+    score_list = np.array([best_score])
+    accep_list = []
     for _ in range(iterations):
         # Calculate score of deviation
         deviation = step_size * np.random.randn(len(params))
         params = best_params + deviation
-        simulated_data = pred_prey(params, time_steps)
-        score = objective_function(simulated_data, data)
+        simulated_data = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
+        score = objective_function(data, simulated_data)
         # Change params and score if closer to local optimum
-        if score > best_score:
+        if score < best_score:
             best_params = params
             best_score = score
-    return best_params
+            score_list = np.append(score_list, best_score)
+            accep_list.append(1)
+        else:
+            accep_list.append(0)
+    return best_params, score_list, accep_list
 
 def mean_squared_error(data, simulated_data):
     '''
@@ -45,7 +52,7 @@ def mean_squared_error(data, simulated_data):
               ' are not equal. Corresponding MSE can not be calculated correctly')
     squared = np.zeros((len(data),2))
     for i in range(len(data)):
-        squared[i, :] = (data[i, :] - simulated_data[i, :])**2
+        squared[i, :] = (simulated_data[i] - data[i])**2
     return np.mean(np.mean(squared, axis=0))
 
 def mean_absolute_percentage_error(data, simulated_data):
@@ -66,15 +73,17 @@ def proposal(mu,var):
     #     u = np.random.normal(mu,var)
     #     if u > 0:
     #         neg = False
-    return np.random.normal(mu,var)
+    return max(np.random.normal(mu,var), 0)
 
 def boltzmann(h, T):
     return np.exp(-h/T)
 
 def acceptance(h_old, h_new, T):
+    if np.isnan(h_old) and not np.isnan(h_new):
+        return 1
     return min(boltzmann(h_new-h_old,T), 1)
 
-def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
+def simulated_annealing(initial, a,b, upper, dt, data, data_t, iterations=10**3,
                         MSE = True):
     """
     Simulated Annealing method for reducing the error between data and function
@@ -98,9 +107,10 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
     T = a/np.log(n+b)
     
     # Initial run
-    simulated_data = pred_prey(params, 100, dt)
+    simulated_data = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
     
     # Call objective function
+    
     if MSE:
         h_old = mean_squared_error(data, simulated_data)
     else:
@@ -115,15 +125,19 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
         
         # finding proposal params
         prop_params = np.zeros(len(params))
-        for i in range(0, len(params)):
-            prop_params[i] = proposal(params[i], upper*T)
-        
-        simulated_data = pred_prey(prop_params, 100, dt)
+        for i in range(len(params)):
+            prop_params[i] = proposal(params[i], upper*(iterations-count)/iterations)
+        simulated_data = odeint(pred_prey, prop_params[:2], data_t, args=tuple(prop_params[2:6]), tfirst=True)
+        if count % 5000 == 0:
+            sim_dat = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
+            print(params, h_old)
+            plt.plot(sim_dat)
+            plt.plot(data)
+            plt.show()
         if MSE:
             h_new = mean_squared_error(data, simulated_data)
         else:
             h_new = mean_absolute_percentage_error(data, simulated_data)
-        
         # accept/reject
         alpha = acceptance(h_old, h_new, T)
         u = np.random.uniform(0,1)
@@ -136,8 +150,7 @@ def simulated_annealing(initial, a,b, upper, dt, data, iterations=10**3,
         else:
             accep_list.append(0)
         
-        T = a/np.log(n+b)
-        print(T)
         count += 1
+        T = a/np.log(count+b)
         
     return params, h_list, accep_list
