@@ -27,19 +27,19 @@ plt.show()
 
 
 # Initial parameters
-init_params = [1, 1 ,1, 0.5, 0.5, 0.5]
-upper = 0.1
+init_params = [0.1]*6
+upper = 5
 a = 0.0001
 b = 1000
 
-# Running hill climbing
-params, h_list, accep_list = hill_climbing(init_params, data_xy, data_t, dt,
-                                                    iterations=10**4, MSE=True)
+# # Running hill climbing
+# params, h_list, accep_list = hill_climbing(init_params, data_xy, data_t, dt,
+#                                                     iterations=10**4, MSE=True)
 
-# # Running simulated annealing
-# params, h_list, accep_list = simulated_annealing(init_params, a,b, 
-#                                                 upper, dt, data_xy, 
-#                                                 iterations=10**5, MSE=True, ts=data_t)
+# Running simulated annealing
+params, h_list, accep_list = simulated_annealing(init_params, a,b, 
+                                                upper, dt, data_xy, data_t,
+                                                iterations=10**5, MSE=True)
 print(params)
 
 # Plotting approx predator prey

@@ -68,12 +68,11 @@ def mean_absolute_percentage_error(data, simulated_data):
     return np.mean(np.mean(percentage, axis=0))
 
 def proposal(mu,var):
-    # neg = True
-    # while neg:
-    #     u = np.random.normal(mu,var)
-    #     if u > 0:
-    #         neg = False
-    return max(np.random.normal(mu,var), 0)
+    u = 0
+    while True:
+        u = np.random.normal(mu, var)
+        if u > 0:
+            return u
 
 def boltzmann(h, T):
     return np.exp(-h/T)
@@ -126,14 +125,14 @@ def simulated_annealing(initial, a,b, upper, dt, data, data_t, iterations=10**3,
         # finding proposal params
         prop_params = np.zeros(len(params))
         for i in range(len(params)):
-            prop_params[i] = proposal(params[i], upper*(iterations-count)/iterations)
+            prop_params[i] = proposal(params[i], params[i]*upper*(iterations-count)/iterations)
         simulated_data = odeint(pred_prey, prop_params[:2], data_t, args=tuple(prop_params[2:6]), tfirst=True)
-        if count % 5000 == 0:
-            sim_dat = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
-            print(params, h_old)
-            plt.plot(sim_dat)
-            plt.plot(data)
-            plt.show()
+        # if count % 10000 == 0:
+        #     sim_dat = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
+        #     print(params, h_old, (iterations-count)/iterations)
+        #     plt.plot(sim_dat)
+        #     plt.plot(data)
+        #     plt.show()
         if MSE:
             h_new = mean_squared_error(data, simulated_data)
         else:
