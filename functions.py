@@ -181,6 +181,9 @@ def sim_exp(init_params, data_xy, data_t, dt, iterations, a, b, upper):
     return h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal
 
 def plot_exp(h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal, data_t, data_xy):
+    '''
+    Visualization of experiments concerning optimization processes and objective functions
+    '''
     # Plotting objective function progression
     # For hill-climbing
     plt.plot(h_list_hill[0], label=f'Hill-climbing')
