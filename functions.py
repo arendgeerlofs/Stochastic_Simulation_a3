@@ -153,3 +153,85 @@ def simulated_annealing(initial, a,b, upper, dt, data, data_t, iterations=10**3,
         T = a/np.log(count+b)
         
     return params, h_list, accep_list
+
+def sim_exp(init_params, data_xy, data_t, dt, iterations, a, b, upper):
+    '''
+    Function to gather the data necessary for the experiments
+    with the differences between hill-climing and simulated annealing
+    And for the difference between MSE and MAPE as objective function
+    '''
+    obj_funcs = [True, False]
+    h_list_hill = [[] for _ in range(2)]
+    h_list_anneal = [[] for _ in range(2)]
+    params_end_hill = [[] for _ in range(2)]
+    params_end_simanneal = [[] for _ in range(2)]
+
+    # Gathering the data 
+    for i_index, i in enumerate(obj_funcs):
+        # Running hill climbing
+        params, h_list_hill[i_index], _ = hill_climbing(init_params, data_xy, data_t, dt,
+                                                            iterations, MSE=i)
+        params_end_hill[i_index] = params
+
+        # Running simulated annealing
+        params, h_list_anneal[i_index], _ = simulated_annealing(init_params, a,b, 
+                                                        upper, dt, data_xy, data_t,
+                                                        iterations, MSE=i)
+        params_end_simanneal[i_index] = params
+    return h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal
+
+def plot_exp(h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal, data_t, data_xy):
+    # Plotting objective function progression
+    # For hill-climbing
+    plt.plot(h_list_hill[0], label=f'Hill-climbing')
+    plt.plot(h_list_anneal[0], label='Simulated annealing')
+    plt.ylim(bottom = 0)
+    plt.xlabel('Number of alterations to the parameters')
+    plt.ylabel('Value of MSE')
+    plt.legend()
+    plt.savefig('MSE comparison')
+    plt.show()
+
+    # For simulated annealing
+    plt.plot(h_list_hill[1], label=f'Hill-climbing')
+    plt.plot(h_list_anneal[1], label='Simulated annealing')
+    plt.ylim(bottom = 0)
+    plt.xlabel('Number of alterations to the parameters')
+    plt.ylabel('Value of MAPE')
+    plt.legend()
+    plt.savefig('MAPE comparison')
+    plt.show()
+    simulated_data_simanneal = [[] for _ in range(2)]
+    simulated_data_hill = [[] for _ in range(2)]
+    obj_funcs = [True, False]
+
+    for i_index, i in enumerate(obj_funcs):
+        # Simulating final results of parameter tuning
+        # For hill-climbing
+        simulated_data_hill[i_index] = odeint(pred_prey, params_end_hill[i_index][:2], 
+                                              data_t, args=tuple(params_end_hill[i_index][2:6]), tfirst=True)
+
+        # plotting final results of parameter tuning for 
+        plt.figure()
+        plt.plot(data_t, simulated_data_hill[i_index], label='Model')
+        plt.plot(data_t, data_xy, 'o', label='Data')
+        plt.xlabel('Time')
+        plt.ylabel('Number of preys and predators')
+        plt.title(f'Using Hill-climbing, for MSE = {i}, the number of preys and predators over time')
+        plt.legend()
+        plt.show()
+
+        # Simulating final results of parameter tuning
+        # for simulated annealing
+        simulated_data_simanneal[i_index] = odeint(pred_prey, params_end_simanneal[i_index][:2], 
+                                                   data_t, args=tuple(params_end_simanneal[i_index][2:6]), tfirst=True)
+
+        # plotting final results of parameter tuning
+        plt.figure()
+        plt.plot(data_t, simulated_data_simanneal[i_index], label='Model')
+        plt.plot(data_t, data_xy, 'o', label='Data')
+        plt.xlabel('Time')
+        plt.ylabel('Number of preys and predators')
+        plt.title(f'Using simulated annealing, for MSE = {i}, the number of preys and predators over time')
+        plt.legend()
+        plt.show()
