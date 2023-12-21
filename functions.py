@@ -237,10 +237,12 @@ def plot_exp(h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal, 
 
         # plotting final results of parameter tuning for 
         plt.figure()
-        plt.plot(data_t, simulated_data_hill[i_index], label='Model')
-        plt.plot(data_t, data_xy, 'o', label='Data')
+        plt.plot(data_t, simulated_data_hill[i_index][:, 0], color='darkblue', label='Predator')
+        plt.plot(data_t, simulated_data_hill[i_index][:, 1], color='red', label='Prey')
+        plt.plot(data_t, data_xy[:, 0], 'o', color='blue', label='Predator')
+        plt.plot(data_t, data_xy[:, 1], 'o', color='crimson', label='Prey')
         plt.xlabel('Time')
-        plt.ylabel('Number of preys and predators')
+        plt.ylabel('Population size')
         plt.savefig('Using Hill-climbing, for MSE = ' + str(i) + '.png')
         plt.legend()
         plt.show()
@@ -251,10 +253,12 @@ def plot_exp(h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal, 
 
         # plotting final results of parameter tuning
         plt.figure()
-        plt.plot(data_t, simulated_data_simanneal[i_index], label='Model')
-        plt.plot(data_t, data_xy, 'o', label='Data')
+        plt.plot(data_t, simulated_data_simanneal[i_index][:, 0], color='darkblue', label='Predator')
+        plt.plot(data_t, simulated_data_simanneal[i_index][:, 1], color='red', label='Prey')
+        plt.plot(data_t, data_xy[:, 0], 'o', color='blue', label='Predator')
+        plt.plot(data_t, data_xy[:, 1], 'o', color='crimson', label='Prey')
         plt.xlabel('Time')
-        plt.ylabel('Number of preys and predators')
+        plt.ylabel('Population size')
         plt.savefig('Using simulated annealing, for MSE = ' + str(i) + '.png')
         plt.legend()
         plt.show()
