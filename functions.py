@@ -184,35 +184,58 @@ def plot_exp(h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal, 
     '''
     Visualization of experiments concerning optimization processes and objective functions
     '''
+    obj_funcs = [True, False]
     # Plotting objective function progression
-    # For hill-climbing
+    # For MSE
     plt.plot(h_list_hill[0], label=f'Hill-climbing')
     plt.plot(h_list_anneal[0], label='Simulated annealing')
     plt.ylim(bottom = 0)
     plt.xlabel('Number of alterations to the parameters')
     plt.ylabel('Value of MSE')
     plt.legend()
-    plt.savefig('MSE comparison')
+    plt.savefig('optimizers_MSE')
     plt.show()
 
-    # For simulated annealing
+    # For MAPE
     plt.plot(h_list_hill[1], label=f'Hill-climbing')
     plt.plot(h_list_anneal[1], label='Simulated annealing')
     plt.ylim(bottom = 0)
     plt.xlabel('Number of alterations to the parameters')
     plt.ylabel('Value of MAPE')
     plt.legend()
-    plt.savefig('MAPE comparison')
+    plt.savefig('optimizers_MAPE')
     plt.show()
+
+    # Plotting for optimization process
+    # For hill-climbing
+    plt.plot(h_list_hill[0]/h_list_hill[0][0], label=f'MSE')
+    plt.plot(h_list_hill[1]/h_list_hill[1][0], label='MAPE')
+    plt.ylim(bottom = 0)
+    plt.xlabel('Number of alterations to the parameters')
+    plt.ylabel('Normalized objective function')
+    plt.title('Hill-climber')
+    plt.legend()
+    plt.savefig('MSE_comparison')
+    plt.show()
+
+    # For simulated annealing
+    plt.plot(h_list_anneal[0]/h_list_anneal[0][0], label=f'MSE')
+    plt.plot(h_list_anneal[1]/h_list_anneal[1][0], label='MAPE')
+    plt.ylim(bottom = 0)
+    plt.xlabel('Number of alterations to the parameters')
+    plt.ylabel('Normalized objective function')
+    plt.title('simulated annealing')
+    plt.legend()
+    plt.savefig('MAPE_comparison')
+    plt.show()
+
     simulated_data_simanneal = [[] for _ in range(2)]
     simulated_data_hill = [[] for _ in range(2)]
-    obj_funcs = [True, False]
 
     for i_index, i in enumerate(obj_funcs):
         # Simulating final results of parameter tuning
         # For hill-climbing
-        simulated_data_hill[i_index] = odeint(pred_prey, params_end_hill[i_index][:2], 
-                                              data_t, args=tuple(params_end_hill[i_index][2:6]), tfirst=True)
+        simulated_data_hill[i_index] = odeint(pred_prey, params_end_hill[i_index][:2], data_t, args=tuple(params_end_hill[i_index][2:6]), tfirst=True)
 
         # plotting final results of parameter tuning for 
         plt.figure()
@@ -221,13 +244,13 @@ def plot_exp(h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal, 
         plt.xlabel('Time')
         plt.ylabel('Number of preys and predators')
         plt.title(f'Using Hill-climbing, for MSE = {i}, the number of preys and predators over time')
+        plt.savefig('Using Hill-climbing, for MSE = ' + str(i) + '.png')
         plt.legend()
         plt.show()
 
         # Simulating final results of parameter tuning
         # for simulated annealing
-        simulated_data_simanneal[i_index] = odeint(pred_prey, params_end_simanneal[i_index][:2], 
-                                                   data_t, args=tuple(params_end_simanneal[i_index][2:6]), tfirst=True)
+        simulated_data_simanneal[i_index] = odeint(pred_prey, params_end_simanneal[i_index][:2], data_t, args=tuple(params_end_simanneal[i_index][2:6]), tfirst=True)
 
         # plotting final results of parameter tuning
         plt.figure()
@@ -236,5 +259,6 @@ def plot_exp(h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal, 
         plt.xlabel('Time')
         plt.ylabel('Number of preys and predators')
         plt.title(f'Using simulated annealing, for MSE = {i}, the number of preys and predators over time')
+        plt.savefig('Using simulated annealing, for MSE = ' + str(i) + '.png')
         plt.legend()
         plt.show()
