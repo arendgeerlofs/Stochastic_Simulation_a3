@@ -2,7 +2,6 @@
 Run file
 """
 import numpy as np
-import csv
 import matplotlib.pyplot as plt
 from functions import *
 
@@ -27,28 +26,51 @@ plt.show()
 
 
 # Initial parameters
-init_params = [0.1]*6
-upper = 5
+init_params = [1]*6
+upper = 1
 a = 0.0001
 b = 1000
+MSE = True
+indices = 21
+runs = 10
+data = np.empty((2, indices, runs))
 
-# # Running hill climbing
-# params, h_list, accep_list = hill_climbing(init_params, data_xy, data_t, dt,
-#                                                     iterations=10**4, MSE=True)
+# Simulated Annealing parameters
+params, h_list, accep_list = simulated_annealing(init_params, a,b,
+                                                            upper, data_xy, data_t,
+                                                            iterations=10**4, MSE=MSE)
 
-# Running simulated annealing
-params, h_list, accep_list = simulated_annealing(init_params, a,b, 
-                                                upper, dt, data_xy, data_t,
-                                                iterations=10**5, MSE=True)
-print(params)
-
-# Plotting approx predator prey
+# Simulate data based on found parameters
 simulated_data = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
 
-# plotting results
-plt.plot(data_t, simulated_data)
-plt.plot(data_t, data_xy)
+# Plot simulated data against real data
+plt.plot(data_t, simulated_data, '-', label='Simulated data')
+plt.plot(data_t, data_xy, 'o', label='Real Data')
+plt.legend()
+plt.xlabel("Time steps")
+plt.ylabel("Amount")
+plt.savefig("simdata", dpi=300)
+plt.savefig("simdata.pdf", dpi=300)
 plt.show()
 
-plt.plot(h_list)
-plt.show()
+
+
+# Run critical data points experiments
+for j in range(2):
+    scores = np.empty((indices, runs))
+    for k in range(runs):
+        for index_i, i in enumerate(np.linspace(1, 101, indices).astype(int)):
+            data_xy_run = np.copy(data_xy)
+            data_xy_run[:, j] = remove_data_points(data_xy_run[:, j], i)
+            # Running simulated annealing
+            params, h_list, accep_list = simulated_annealing(init_params, a,b,
+                                                            upper, data_xy_run, data_t,
+                                                            iterations=10**4, MSE=MSE)
+            # Plotting approximate predator prey
+            simulated_data = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
+            score = mean_squared_error(data_xy, simulated_data)
+            scores[index_i][k] = score
+    scores = np.mean(scores, axis=1)
+    plt.plot(np.linspace(1, 101, indices), scores, '.')
+    plt.ylim([0, 1])
+    plt.show()

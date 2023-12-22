@@ -17,7 +17,6 @@ def hill_climbing(params, data, data_t, dt, iterations, MSE=True, step_size = 0.
     Local optimum optimization function that converges to local optimum by slightly
     changing param values randomly and comparing objective scores
     """
-    time_steps = np.shape(data)[0]
     if MSE:
         objective_function = mean_squared_error
     else:
@@ -52,7 +51,11 @@ def mean_squared_error(data, simulated_data):
               ' are not equal. Corresponding MSE can not be calculated correctly')
     squared = np.zeros((len(data),2))
     for i in range(len(data)):
-        squared[i, :] = (simulated_data[i] - data[i])**2
+        for j in range(np.shape(data)[1]):
+            if np.isnan(data[i][j]):
+                squared[i][j] = 0
+            else:
+                squared[i, j] = (simulated_data[i][j] - data[i][j])**2
     return np.mean(np.mean(squared, axis=0))
 
 def mean_absolute_percentage_error(data, simulated_data):
@@ -64,7 +67,11 @@ def mean_absolute_percentage_error(data, simulated_data):
               ' are not equal. Corresponding MAPE can not be calculated correctly')
     percentage = np.zeros((len(data),2))
     for i in range(len(data)):
-        percentage[i, :] = np.abs(data[i, :] - simulated_data[i, :]) / data[i, :]
+        for j in range(np.shape(data)[1]):
+            if np.isnan(data[i][j]):
+                percentage[i][j] = 0
+            else:
+                percentage[i][j] = np.abs(data[i][j] - simulated_data[i][j]) / data[i][j]
     return np.mean(np.mean(percentage, axis=0))
 
 def proposal(mu,var):
@@ -82,7 +89,7 @@ def acceptance(h_old, h_new, T):
         return 1
     return min(boltzmann(h_new-h_old,T), 1)
 
-def simulated_annealing(initial, a,b, upper, dt, data, data_t, iterations=10**3,
+def simulated_annealing(initial, a,b, upper, data, data_t, iterations=10**3,
                         MSE = True):
     """
     Simulated Annealing method for reducing the error between data and function
@@ -153,3 +160,44 @@ def simulated_annealing(initial, a,b, upper, dt, data, data_t, iterations=10**3,
         T = a/np.log(count+b)
         
     return params, h_list, accep_list
+
+def remove_data_points(series, amount):
+    if amount > len(series):
+        amount = len(series)
+    indexes = [i for i in range(len(series))]
+    for _ in range(amount):
+        index = np.random.choice(indexes)
+        indexes.remove(index)
+        series[index] = np.nan
+    return series
+
+def remove_extreme_data_points(series, amount):
+    if amount > len(series):
+        amount = len(series)
+    for _ in range(amount):
+        maxval = np.nanmax(series)
+        minval = np.nanmin(series)
+        mean = np.nanmean(series)
+        index = 0
+        if maxval - mean > mean - minval:
+            index = np.nanargmax(series)
+        else:
+            index = np.nanargmin(series)
+        series[index] = np.nan
+    return series
+
+def remove_average_data_points(series, amount):
+    if amount > len(series):
+        amount = len(series)
+    indexes = [i for i in range(len(series))]
+    for _ in range(amount):
+        mean = np.nanmean(series)
+        most_average = 0
+        most_difference = np.nanmax(series)
+        for j, value in enumerate(series):
+            if np.abs(value - mean) < most_difference:
+                most_average = j
+                most_difference = np.abs(value - mean)
+        indexes.remove(most_average)
+        series[most_average] = np.nan
+    return series
