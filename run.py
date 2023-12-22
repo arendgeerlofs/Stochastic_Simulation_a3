@@ -3,8 +3,10 @@ Run file
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from functions import *
 import scipy.stats as stats
+from scipy.integrate import odeint
+from functions import *
+
 
 # Importing data
 data = np.loadtxt('predator-prey-data.csv', skiprows=1, delimiter=',')
@@ -28,17 +30,17 @@ plt.show()
 
 # Initial parameters
 init_params = [1]*6
-upper = 1
+UPPER = 1
 a = 0.0001
 b = 1000
 MSE = True
-indices = 21
-runs = 10
-data = np.empty((2, indices, runs))
+INDICES = 21
+RUNS = 10
+data = np.empty((2, INDICES, RUNS))
 
 # Simulated Annealing parameters
 params, h_list, accep_list = simulated_annealing(init_params, a,b,
-                                                            upper, data_xy, data_t,
+                                                            UPPER, data_xy, data_t,
                                                             iterations=10**4, MSE=MSE)
 
 # Simulate data based on found parameters
@@ -57,32 +59,61 @@ plt.show()
 plt.plot(h_list)
 plt.show()
 
-iterations = 10**5
+ITERATIONS = 10**5
 # Gathering the data for the experiments
-h_hill, h_anneal, params_hill, params_anneal = sim_exp(init_params, data_xy, 
-                                                       data_t, dt, iterations, 
-                                                       a, b, upper)
+h_hill, h_anneal, params_hill, params_anneal = sim_exp(init_params, data_xy,
+                                                       data_t, ITERATIONS,
+                                                       a, b, UPPER)
 
 # Visualization of the experiments
 plot_exp(h_hill, h_anneal, params_hill, params_anneal, data_t, data_xy)
 
-
-# Run critical data points experiments
+results = np.empty((2, INDICES, RUNS))
 for j in range(2):
-    scores = np.empty((indices, runs))
-    for k in range(runs):
-        for index_i, i in enumerate(np.linspace(1, 101, indices).astype(int)):
+    scores = np.empty((INDICES, RUNS))
+    for k in range(RUNS):
+        for index_i, i in enumerate(np.linspace(1, 101, INDICES).astype(int)):
             data_xy_run = np.copy(data_xy)
-            data_xy_run[:, j] = remove_data_points(data_xy_run[:, j], i)
+            data_xy_run[:, j] = remove_average_data_points(data_xy_run[:, j], i)
             # Running simulated annealing
             params, h_list, accep_list = simulated_annealing(init_params, a,b,
-                                                            upper, data_xy_run, data_t,
-                                                            iterations=10**4, MSE=MSE)
-            # Plotting approximate predator prey
-            simulated_data = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
-            score = mean_squared_error(data_xy, simulated_data)
-            scores[index_i][k] = score
-    scores = np.mean(scores, axis=1)
-    plt.plot(np.linspace(1, 101, indices), scores, '.')
-    plt.ylim([0, 1])
-    plt.show()
+                                                            UPPER, data_xy_run, data_t,
+                                                            iterations=10**3, MSE=MSE)
+
+            # Computing approx predator prey
+            sim_data = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
+            score = mean_squared_error(data_xy, sim_data)
+
+            results[j, index_i, k] = score
+
+# Calculate stds
+std = np.std(results[0], axis=1)
+# Plot errorbars
+plt.errorbar(np.linspace(0, 101, 21), np.mean(results[1], axis=1), yerr=std, label='x', fmt='o-')
+plt.errorbar(np.linspace(0, 101, 21), np.mean(results[0], axis=1), yerr=std, label='y', fmt='o-')
+plt.ylim(0, 10)
+plt.xlabel("n datapoints removed")
+plt.ylabel("Mean MSE")
+plt.legend()
+# Save figure
+plt.savefig("AverageRemoval.pdf", dpi=300)
+plt.savefig("AverageRemoval", dpi=300)
+
+# Calculate mean, median, minimum and std deviation of combined reduced time-series
+reduced_scores = np.empty(100)
+for i in range(100):
+    print(i)
+    data_xy_run = np.copy(data_xy)
+    data_xy_run[:, 0] = remove_average_data_points(data_xy_run[:, 0], 90)
+    data_xy_run[:, 1] = remove_average_data_points(data_xy_run[:, 1], 90)
+    params, h_list, accep_list = simulated_annealing(init_params, a,b,
+                                                                UPPER, data_xy_run, data_t,
+                                                                iterations=10**3, MSE=MSE)
+    # Plotting approximate predator prey
+    simulated_data = odeint(pred_prey, params[:2], data_t, args=tuple(params[2:6]), tfirst=True)
+    reduced_scores[i] = mean_squared_error(data_xy, simulated_data)
+# Print values
+print(np.mean(reduced_scores))
+print(np.median(reduced_scores))
+print(np.min(reduced_scores))
+print(np.std(reduced_scores))
