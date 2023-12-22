@@ -208,7 +208,7 @@ def plot_exp(h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal, 
 
     # Plotting for optimization process
     # For hill-climbing
-    plt.plot(h_list_hill[0]/h_list_hill[0][0], label=f'MSE')
+    plt.plot(h_list_hill[0]/h_list_hill[0][0], label='MSE')
     plt.plot(h_list_hill[1]/h_list_hill[1][0], label='MAPE')
     plt.ylim(bottom = 0)
     plt.xlabel('Number of alterations to the parameters')
@@ -218,7 +218,7 @@ def plot_exp(h_list_hill, h_list_anneal, params_end_hill, params_end_simanneal, 
     plt.show()
 
     # For simulated annealing
-    plt.plot(h_list_anneal[0]/h_list_anneal[0][0], label=f'MSE')
+    plt.plot(h_list_anneal[0]/h_list_anneal[0][0], label='MSE')
     plt.plot(h_list_anneal[1]/h_list_anneal[1][0], label='MAPE')
     plt.ylim(bottom = 0)
     plt.xlabel('Number of alterations to the parameters')

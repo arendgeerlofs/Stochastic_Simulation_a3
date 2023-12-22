@@ -60,36 +60,5 @@ h_hill, h_anneal, params_hill, params_anneal = sim_exp(init_params, data_xy,
                                                        data_t, dt, iterations, 
                                                        a, b, upper)
 
-# Hypothesis testing optimization process
-# Mann-Whithney U test for difference between hill-climbing 
-# and simulated annealing for MSE as objective function
-U_MSE, p_MSE = stats.mannwhitneyu(h_hill[0], h_anneal[0])
-print(f'The differences between hill-climbing and simulated annealing, ',
-      'using MSE as objective function, result in a Mann-Whitney U-value', 
-       ' of {U_MSE} with significance {p_MSE}')
-
-# Mann-Whithney U test for difference between hill-climbing 
-# and simulated annealing for MAPE as objective function
-U_MAPE, p_MAPE = stats.mannwhitneyu(h_hill[1], h_anneal[1])
-print(f'The differences between hill-climbing and simulated annealing, ',
-      'using MAPE as objective function, result in a Mann-Whitney U-value', 
-       'of {U_MAPE} with significance {p_MAPE}')
-
-# Mann-Whithney U test for difference MSE and MAPE as 
-# objective function for Hill-climbing as optimization process
-U_objfunc_Hill, p_objfunc_Hill = stats.mannwhitneyu(h_hill[0]/h_hill[0][0], 
-                                                    h_hill[1]/h_hill[1][0])
-print(f'The differences between MSE and MAPE, using hill-climbing as ',
-      'optimization process, result in a Mann-Whitney U-value of {U_objfunc_Hill} ',
-      'with significance {p_objfunc_Hill}')
-# Mann-Whithney U test for difference MSE and MAPE as objective 
-# function for simulated annealing as optimization process
-U_objfunc_simanneal, p_objfunc_simanneal = stats.mannwhitneyu(h_anneal[0]/h_anneal[0][0], 
-                                                              h_anneal[1]/h_anneal[1][0])
-print(f'The differences between MSE and MAPE, using simulated annealing as optimization',
-       'process, result in a Mann-Whitney U-value of {U_objfunc_simanneal} ',
-       'with significance {p_objfunc_simanneal}')
-
-
 # Visualization of the experiments
 plot_exp(h_hill, h_anneal, params_hill, params_anneal, data_t, data_xy)
