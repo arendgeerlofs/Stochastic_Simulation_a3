@@ -3,7 +3,6 @@ Run file
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.stats as stats
 from scipy.integrate import odeint
 from functions import *
 
