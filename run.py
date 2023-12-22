@@ -4,6 +4,7 @@ Run file
 import numpy as np
 import matplotlib.pyplot as plt
 from functions import *
+import scipy.stats as stats
 
 # Importing data
 data = np.loadtxt('predator-prey-data.csv', skiprows=1, delimiter=',')
@@ -53,6 +54,17 @@ plt.savefig("simdata", dpi=300)
 plt.savefig("simdata.pdf", dpi=300)
 plt.show()
 
+plt.plot(h_list)
+plt.show()
+
+iterations = 10**5
+# Gathering the data for the experiments
+h_hill, h_anneal, params_hill, params_anneal = sim_exp(init_params, data_xy, 
+                                                       data_t, dt, iterations, 
+                                                       a, b, upper)
+
+# Visualization of the experiments
+plot_exp(h_hill, h_anneal, params_hill, params_anneal, data_t, data_xy)
 
 
 # Run critical data points experiments
