@@ -5,3 +5,5 @@ Further experiments were done into the effects of different objective functions 
 
 Run.py contains the code to run the experiments.
 Functions.py contains the different functions which run the Simulated Annealing, Hill climbing, experiments and helper functions
+
+Matplotlib version : 3.6.3 Numpy version : 1.23.0 Scipy version : 1.10.0
